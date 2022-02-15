@@ -122,6 +122,16 @@ static bool evalBeam1D(const PhotonBeam &beam, PathSampleGenerator &sampler, con
 {
     float invSinTheta, t;
     if (intersectBeam1D(beam, ray, bounds, tMin, tMax, radius, invSinTheta, t)) {
+<<<<<<< HEAD
+=======
+        /* Let's check the actual distance between beam and camera ray */
+        Vec3f line = beam.p0 - ray.pos();
+        Vec3f unit = beam.dir.cross(ray.dir()).normalized();
+        float length = abs(line.dot(unit));
+        if (length >= radius)
+            std::cout << "Far Distance from beam: " << length << std::endl;
+
+>>>>>>> 7121f05 (debugging done till now)
         Vec3f hitPoint = ray.pos() + ray.dir()*t;
 
         Ray mediumQuery(ray);
@@ -129,6 +139,18 @@ static bool evalBeam1D(const PhotonBeam &beam, PathSampleGenerator &sampler, con
         beamEstimate += medium->sigmaT(hitPoint)*invSinTheta/(2.0f*radius)
                 *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
                 *medium->transmittance(sampler, mediumQuery, true, false)*beam.power;
+<<<<<<< HEAD
+=======
+        
+        std::cout << "medium sigma invsintheta: " << medium->sigmaT(hitPoint) << ", " << invSinTheta << ", " << radius
+                  << " | medium phase function: " << medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
+                  << " | medium transmittance: " << medium->transmittance(sampler, mediumQuery, true, false)
+                  <<" | beam.power: " << beam.power
+                  << std::endl;
+        std::cout << "Net: " << medium->sigmaT(hitPoint)*invSinTheta/(2.0f*radius)
+                *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
+                *medium->transmittance(sampler, mediumQuery, true, false)*beam.power << std::endl;
+>>>>>>> 7121f05 (debugging done till now)
 
         return true;
     }
@@ -391,6 +413,7 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
             result += throughput*info.primitive->evalDirect(data, info);
         return result;
     }
+<<<<<<< HEAD
     if (info.primitive->isEmissive() && bounce > _settings.minBounces)
         result += throughput*info.primitive->evalDirect(data, info);
 
@@ -416,6 +439,46 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
     float radiusSq = count == int(_settings.gatherCount) ? _distanceQuery[0] : gatherRadius*gatherRadius;
     result += throughput*surfaceEstimate*(INV_PI/radiusSq);
 
+=======
+    // if (info.primitive->isEmissive() && bounce > _settings.minBounces) {
+    //     result += throughput*info.primitive->evalDirect(data, info);
+    //     std::cout << "Surface Emission: Throughput till now: " << throughput
+    //               << " | eval direct: " << info.primitive->evalDirect(data, info)
+    //               << " | net emission calculated: " << throughput*info.primitive->evalDirect(data, info) 
+    //               << std::endl;
+    // }
+
+    // int count = surfaceTree.nearestNeighbours(ray.hitpoint(), _photonQuery.get(), _distanceQuery.get(),
+    //         _settings.gatherCount, gatherRadius);
+    // if (count == 0)
+    //     return result;
+
+    // const Bsdf &bsdf = *info.bsdf;
+    // SurfaceScatterEvent event = makeLocalScatterEvent(data, info, ray, &sampler);
+
+    // Vec3f surfaceEstimate(0.0f);
+    // std::cout << "Calculating Surface Estimate" << std::endl;
+    // for (int i = 0; i < count; ++i) {
+    //     int fullPathBounce = bounce + _photonQuery[i]->bounce - 1;
+    //     if (fullPathBounce < _settings.minBounces || fullPathBounce >= _settings.maxBounces)
+    //         continue;
+
+    //     event.wo = event.frame.toLocal(-_photonQuery[i]->dir);
+    //     // Asymmetry due to shading normals already compensated for when storing the photon,
+    //     // so we don't use the adjoint BSDF here
+    //     surfaceEstimate += _photonQuery[i]->power*bsdf.eval(event, false)/std::abs(event.wo.z());
+    //     //
+    //     std::cout << "Count: " << i << " | photon power: " << _photonQuery[i]->power
+    //               << " | bsdf eval: " << bsdf.eval(event, false)
+    //               << " | Net: " << _photonQuery[i]->power*bsdf.eval(event, false)/std::abs(event.wo.z())
+    //               << std::endl;
+    // }
+    // float radiusSq = count == int(_settings.gatherCount) ? _distanceQuery[0] : gatherRadius*gatherRadius;
+    
+    // result += throughput*surfaceEstimate*(INV_PI/radiusSq);
+    // std::cout << "radiusSq: " << radiusSq << " | Net: " <<  throughput*surfaceEstimate*(INV_PI/radiusSq)
+    //           << std::endl;
+>>>>>>> 7121f05 (debugging done till now)
     return result;
 }
 
