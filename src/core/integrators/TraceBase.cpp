@@ -543,9 +543,11 @@ bool TraceBase::handleSurface(SurfaceScatterEvent &event, IntersectionTemporary 
             }
         }
 
+        std::cout << "scatter event weight before: " << event.weight << std::endl;
         event.requestedLobe = BsdfLobes::AllLobes;
         if (!bsdf.sample(event, adjoint))
             return false;
+        std::cout << "scatter event weight after: " << event.weight << std::endl;
 
         wo = event.frame.toGlobal(event.wo);
 

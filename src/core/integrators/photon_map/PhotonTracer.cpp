@@ -470,6 +470,7 @@ void PhotonTracer::tracePhotonPath(SurfacePhotonRange &surfaceRange, VolumePhoto
         p.pos = point.p;
         p.power = throughput;
         p.setPathInfo(0, true);
+        std::cout << "Init path photon, power: " << throughput << " pos: " << p.pos << std::endl;
     }
 
     SurfaceScatterEvent event;
@@ -493,6 +494,7 @@ void PhotonTracer::tracePhotonPath(SurfacePhotonRange &surfaceRange, VolumePhoto
 
         Vec3f continuedThroughput = throughput;
         if (medium) {
+            std::cout << "bounce: " << bounce << std::endl;
             MediumSample mediumSample;
             if (!medium->sampleDistance(sampler, ray, state, mediumSample))
                 break;
@@ -558,6 +560,7 @@ void PhotonTracer::tracePhotonPath(SurfacePhotonRange &surfaceRange, VolumePhoto
                 p.power = continuedThroughput;
                 std::cout << "bounce: " << bounce << " ,pos: " << p.pos << " ,dir: " << p.dir << " ,power: " << p.power << std::endl;
                 p.setPathInfo(bounce, true);
+                std::cout << "path photon, bounce: " << bounce << " power: " << continuedThroughput << " pos: " << p.pos << " reached surface" << std::endl;
             }
         }
 
