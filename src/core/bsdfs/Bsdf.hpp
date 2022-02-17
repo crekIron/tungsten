@@ -79,9 +79,6 @@ public:
                 (event.frame.toGlobal(event.wi).dot(event.info->Ng)*event.wo.z())); // TODO: Optimize
         else
             event.weight *= sqr(eta(event));
-        std::cout << "constant mul: " << std::abs(
-                (event.frame.toGlobal(event.wo).dot(event.frame.normal)*event.wi.z())/
-                (event.frame.toGlobal(event.wi).dot(event.frame.normal)*event.wo.z())) << std::endl;
         return true;
     }
     inline Vec3f eval(const SurfaceScatterEvent &event, bool adjoint) const

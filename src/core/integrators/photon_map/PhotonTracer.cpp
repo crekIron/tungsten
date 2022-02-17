@@ -137,18 +137,24 @@ static bool evalBeam1D(const PhotonBeam &beam, PathSampleGenerator &sampler, con
                 *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
                 *medium->transmittance(sampler, mediumQuery, true, false)*beam.power;
         
-        // std::cout << "medium sigma invsintheta: " << medium->sigmaT(hitPoint) << ", " << invSinTheta << ", " << radius
-        //           << " | medium phase function: " << medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
-        //           << " | medium transmittance: " << medium->transmittance(sampler, mediumQuery, true, false)
-        //           <<" | beam.power: " << beam.power
-        //           << std::endl;
-        // std::cout << "Net: " << medium->sigmaT(hitPoint)*invSinTheta/(2.0f*radius)
-        //         *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
-        //         *medium->transmittance(sampler, mediumQuery, true, false)*beam.power << std::endl;
+        // std::cout <<  << "medium sigma invsintheta: " << medium->sigmaT(hitPoint) << ", " << invSinTheta << ", " << radius
+                //   << " | medium phase function: " << medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
+                //   << " | medium transmittance: " << medium->transmittance(sampler, mediumQuery, true, false)
+                //   <<" | beam.power: " << beam.power
+                //   << std::endl;
+        // std::cout <<  << "Net: " << medium->sigmaT(hitPoint)*invSinTheta/(2.0f*radius)
+                // *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
+                // *medium->transmittance(sampler, mediumQuery, true, false)*beam.power << std::endl;
 
         return true;
     }
-
+    // Vec3f line = beam.p0 - ray.pos();
+    // Vec3f unit = beam.dir.cross(ray.dir()).normalized();
+    // float length = abs(line.dot(unit));
+    // if (length <= radius) {
+    //     std::cout << "Far Distance from beam: " << length << std::endl;
+    // }
+    
     return false;
 }
 static bool evalPlane0D(const PhotonPlane0D &p, PathSampleGenerator &sampler, const Ray &ray, const Medium *medium,
@@ -288,14 +294,15 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
     bool didHit = _scene->intersect(ray, data, info);
 
     depthRay = ray;
-
+    // std::cout <<  << "STARTING THE LOOP for pixel: " << pixel << std::endl;
     while ((medium || didHit) && bounce < _settings.maxBounces) {
         bounce++;
+        // std::cout <<  << "ITERATION: " << bounce << std::endl;
 
         if (medium) {
             if (bounce > 1 || !useFrustumGrid) {
                 Vec3f estimate(0.0f);
-
+                // std::cout <<  << "Lets Calculate Estimate, bounce: " << bounce << std::endl;
                 auto pointContribution = [&](const VolumePhoton &p, float t, float distSq) {
                     int fullPathBounce = bounce + p.bounce - 1;
                     if (fullPathBounce < _settings.minBounces || fullPathBounce >= _settings.maxBounces)
@@ -312,7 +319,7 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
                     int fullPathBounce = bounce + beam.bounce;
                     if (fullPathBounce < _settings.minBounces || fullPathBounce >= _settings.maxBounces)
                         return;
-
+                    // std::cout <<  << "Full Path bounce: " << bounce << ", " << beam.bounce << std::endl;
                     evalBeam1D(beam, sampler, ray, medium, bounds, tMin, tMax, volumeGatherRadius, estimate);
                 };
                 auto planeContribution = [&](uint32 photon, const Vec3pf *bounds, float tMin, float tMax) {
@@ -356,7 +363,7 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
                         });
                     }
                 }
-
+                // std::cout <<  << "Total Estimate: " << estimate << " Throughput: " << throughput << std::endl;
                 result += throughput*estimate;
             }
             throughput *= medium->transmittance(sampler, ray, true, true);
@@ -381,7 +388,7 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
                 break;
 
             wo = event.frame.toGlobal(event.wo);
-
+            // std::cout <<  << "bounce: " << bounce << " bsdf weight: " << event.weight << std::endl;
             throughput *= event.weight;
         }
 
@@ -470,7 +477,6 @@ void PhotonTracer::tracePhotonPath(SurfacePhotonRange &surfaceRange, VolumePhoto
         p.pos = point.p;
         p.power = throughput;
         p.setPathInfo(0, true);
-        std::cout << "Init path photon, power: " << throughput << " pos: " << p.pos << std::endl;
     }
 
     SurfaceScatterEvent event;
@@ -494,7 +500,6 @@ void PhotonTracer::tracePhotonPath(SurfacePhotonRange &surfaceRange, VolumePhoto
 
         Vec3f continuedThroughput = throughput;
         if (medium) {
-            std::cout << "bounce: " << bounce << std::endl;
             MediumSample mediumSample;
             if (!medium->sampleDistance(sampler, ray, state, mediumSample))
                 break;
@@ -516,7 +521,6 @@ void PhotonTracer::tracePhotonPath(SurfacePhotonRange &surfaceRange, VolumePhoto
                 p.pos = mediumSample.p;
                 p.power = continuedThroughput;
                 p.setPathInfo(bounce, false);
-                std::cout << "bounce: " << bounce << " ,pos: " << p.pos << " ,dir: " << p.dir << " ,power: " << p.power << std::endl;
             }
 
             Ray continuedRay;
@@ -552,15 +556,12 @@ void PhotonTracer::tracePhotonPath(SurfacePhotonRange &surfaceRange, VolumePhoto
                 p.dir = ray.dir();
                 p.power = throughput*std::abs(info.Ns.dot(ray.dir())/info.Ng.dot(ray.dir()));
                 p.bounce = bounce;
-                std::cout << "bounce: " << bounce << " ,pos: " << p.pos << " ,dir: " << p.dir << " ,power: " << p.power << std::endl;
             }
             if (!pathRange.full()) {
                 PathPhoton &p = pathRange.addPhoton();
                 p.pos = info.p;
                 p.power = continuedThroughput;
-                std::cout << "bounce: " << bounce << " ,pos: " << p.pos << " ,dir: " << p.dir << " ,power: " << p.power << std::endl;
                 p.setPathInfo(bounce, true);
-                std::cout << "path photon, bounce: " << bounce << " power: " << continuedThroughput << " pos: " << p.pos << " reached surface" << std::endl;
             }
         }
 

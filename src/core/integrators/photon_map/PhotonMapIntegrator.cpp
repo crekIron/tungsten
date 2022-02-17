@@ -130,7 +130,7 @@ std::unique_ptr<KdTree<PhotonType>> streamCompactAndBuild(std::vector<PhotonRang
         std::vector<PhotonType> &photons, uint32 totalTraced)
 {
     uint32 tail = streamCompact(ranges);
-    std::cout << "Total surface paths traced: " << totalTraced << std::endl;
+    std::cout << "Total Surface Paths: " << totalTraced << std::endl;
     float scale = 1.0f/totalTraced;
     for (uint32 i = 0; i < tail; ++i) {
         photons[i].power *= scale;
@@ -358,10 +358,6 @@ void PhotonMapIntegrator::buildPhotonDataStructures(float volumeRadiusScale)
         std::cout << "Total Beam Paths: " << _totalTracedPaths << std::endl;
         for (uint32 i = 0; i < tail; ++i) {
             _pathPhotons[i].power *= (1.0/_totalTracedPaths);
-            std::cout << "Beam Photons->"
-                  << " bounce: " << _pathPhotons[i].bounce()
-                  << " power: " << _pathPhotons[i].power 
-                  << std::endl;
         }
 
         for (uint32 i = 0; i < tail; ++i) {
