@@ -12,9 +12,9 @@
 !/Header.jpg
 !/Readme.md
 !/LICENSE.txt
-!/src/
+# !/src/
 !/data/editor
-!/data/example-scenes
+# !/data/example-scenes
 !/data/materialtest
 !/data/mc-loader
 !/data/shaders
