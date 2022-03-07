@@ -1,11 +1,26 @@
 {
-    "media": [],
+    "media": [
+        {
+            "name": "gas1",
+            "phase_function": {
+                "type": "isotropic"
+            },
+            "transmittance": {
+                "type": "exponential"
+            },
+            "max_bounces": 1024,
+            "type": "homogeneous",
+            "sigma_a": 0.0,
+            "sigma_s": 0.5,
+            "density": 1.0
+        }
+    ],
     "bsdfs": [
         {
             "name": "leftWall",
             "albedo": [
-                0.63,
-                0.065,
+                0.80,
+                0.05,
                 0.05
             ],
             "type": "lambert"
@@ -13,54 +28,54 @@
         {
             "name": "rightWall",
             "albedo": [
-                0.14,
-                0.45,
-                0.091
+                0.05, 
+                0.80, 
+                0.05
             ],
             "type": "lambert"
         },
         {
             "name": "floor",
             "albedo": [
-                0.725,
-                0.71,
-                0.68
-            ],
+                0.80,
+                0.80,
+                0.80
+           ],
             "type": "lambert"
         },
         {
             "name": "ceiling",
             "albedo": [
-                0.725,
-                0.71,
-                0.68
+                0.80,
+                0.80,
+                0.80
             ],
             "type": "lambert"
         },
         {
             "name": "backWall",
             "albedo": [
-                0.725,
-                0.71,
-                0.68
+                0.80,
+                0.80,
+                0.80
             ],
             "type": "lambert"
         },
         {
             "name": "shortBox",
             "albedo": [
-                0.725,
-                0.71,
-                0.68
+                0.80,
+                0.80,
+                0.80
             ],
             "type": "lambert"
         },
         {
             "name": "tallBox",
             "albedo": [
-                0.725,
-                0.71,
-                0.68
+                0.80,
+                0.80,
+                0.80
             ],
             "type": "lambert"
         },
@@ -81,14 +96,19 @@
         {
             "name": "floor",
             "transform": {
+                "position": [
+                    0.556,
+                    0,
+                    0.5592
+                ],
                 "scale": [
-                    2,
-                    4,
-                    2
+                    1.112,
+                    1,
+                    1.1184
                 ],
                 "rotation": [
                     0,
-                    90,
+                    0,
                     0
                 ]
             },
@@ -99,14 +119,14 @@
             "name": "ceiling",
             "transform": {
                 "position": [
-                    0,
-                    2,
-                    0
+                    0.556,
+                    1.0976,
+                    0.5592
                 ],
                 "scale": [
-                    2,
-                    4,
-                    2
+                    1.112,
+                    1,
+                    1.1184
                 ],
                 "rotation": [
                     0,
@@ -121,40 +141,63 @@
             "name": "backWall",
             "transform": {
                 "position": [
-                    0,
-                    1,
-                    -1
+                    0.556,
+                    0.5488,
+                    1.1184
                 ],
                 "scale": [
-                    2,
-                    4,
-                    2
+                    1.112,
+                    1,
+                    1.0976
                 ],
                 "rotation": [
-                    0,
                     90,
-                    90
+                    0,
+                    0
                 ]
             },
             "type": "quad",
             "bsdf": "backWall"
         },
         {
-            "name": "rightWall",
+            "name": "FrontWall",
             "transform": {
                 "position": [
-                    1,
-                    1,
+                    0.556,
+                    0.5488,
                     0
                 ],
                 "scale": [
-                    2,
-                    4,
-                    2
+                    1.112,
+                    1,
+                    1.0976
+                ],
+                "rotation": [
+                    -90,
+                    0,
+                    0
+                ]
+            },
+            "type": "quad",
+            "bsdf": "water",
+            "int_medium": "gas1"
+        },
+        {
+            "name": "rightWall",
+            "transform": {
+                "position": [
+                    0,
+                    0.5488,
+                    0.5592
+                ],
+                "scale": [
+                    1.0976,
+                    1,
+                    1.1184
                 ],
                 "rotation": [
                     0,
-                    180,
+                    0,
                     90
                 ]
             },
@@ -165,19 +208,19 @@
             "name": "leftWall",
             "transform": {
                 "position": [
-                    -1,
-                    1,
-                    0
+                    1.112,
+                    0.5488,
+                    0.5592
                 ],
                 "scale": [
-                    2,
-                    4,
-                    2
+                    1.0976,
+                    1,
+                    1.1184
                 ],
                 "rotation": [
                     0,
                     0,
-                    90
+                    -90
                 ]
             },
             "type": "quad",
@@ -187,19 +230,19 @@
             "name": "shortBox",
             "transform": {
                 "position": [
-                    0.5132,
-                    0.15215,
-                    0.44471
+                    0.371,
+                    0.165,
+                    0.338
                 ],
                 "scale": [
-                    0.319977,
-                    0.325132,
-                    0.322768
+                    0.32968,
+                    0.33,
+                    0.33409
                 ],
                 "rotation": [
-                    90,
-                    90,
-                    -66.034
+                    0,
+                    16.566,
+                    0
                 ]
             },
             "type": "cube",
@@ -209,19 +252,19 @@
             "name": "tallBox",
             "transform": {
                 "position": [
-                    -0.528405,
-                    0.335942,
-                    -0.291415
+                    0.737,
+                    0.33,
+                    0.702
                 ],
                 "scale": [
-                    0.34664,
-                    0.341188,
-                    0.684957
+                    0.33276,
+                    0.66,
+                    0.33085
                 ],
                 "rotation": [
-                    90,
-                    -180,
-                    157.627
+                    0,
+                    72.87,
+                    0
                 ]
             },
             "type": "cube",
@@ -231,14 +274,14 @@
             "name": "light",
             "transform": {
                 "position": [
-                    -0.005,
-                    1.98,
-                    -0.03
+                    0.556,
+                    1.0972,
+                    0.559
                 ],
                 "scale": [
-                    0.005,
+                    0.26,
                     1,
-                    0.004
+                    0.21
                 ],
                 "rotation": [
                     0,
@@ -247,63 +290,32 @@
                 ]
             },
             "power": [
-                34,
-                24,
-                8
+                15,
+                15,
+                5
             ],
             "type": "quad",
-            "bsdf": "light"
-        },
-        {
-            "name": "Water",
-            "transform": {
-                "scale": [
-                    1,
-                    1.5,
-                    1
-                ]
-            },
-            "type": "mesh",
-            "file": "water.wo3",
-            "smooth": true,
-            "backface_culling": false,
-            "recompute_normals": true,
-            "bsdf": "water"
-        },
-        {
-            "name": "Front",
-            "transform": {
-                "scale": [
-                    1,
-                    1.5,
-                    1
-                ]
-            },
-            "type": "mesh",
-            "file": "front.wo3",
-            "smooth": false,
-            "backface_culling": false,
-            "recompute_normals": true,
-            "bsdf": "water"
+            "bsdf": "light",
+            "ext_medium": "gas1"
         }
     ],
     "camera": {
         "tonemap": "filmic",
         "resolution": [
-            1000,
-            563
+            768,
+            768
         ],
         "reconstruction_filter": "tent",
         "transform": {
             "position": [
-                -1.03263e-006,
-                0.990944,
-                6.83879
+                0.556,
+                0.546,
+                -1.8
             ],
             "look_at": [
-                0,
-                0.990944,
-                3.19966e-012
+                0.556,
+                0.546,
+                0.66
             ],
             "up": [
                 0,
@@ -315,28 +327,30 @@
         "fov": 35
     },
     "integrator": {
-        "type": "progressive_photon_map",
+        "type": "photon_map",
+        "volume_photon_type" : "beams",
         "min_bounces": 0,
-        "max_bounces": 8,
+        "max_bounces": 10,
         "enable_consistency_checks": false,
         "enable_two_sided_shading": true,
-        "gather_radius": 0.05,
-        "photon_count": 5000000,
-        "volume_photon_count": 100000,
-        "gather_photon_count": 20,
+        "gather_radius":0.05,
+        "photon_count": 240000,
+        "gather_photon_count": 30,
+        "volume_photon_count": 10000,
         "alpha": 0.3,
         "fixed_volume_radius": false,
-        "volume_gather_radius": 0.05
+        "volume_gather_radius": 0.05,
+        "include_surfaces": true
     },
-    "renderer": {
+    "renderer": { 
         "output_file": "TungstenRender.png",
         "resume_render_file": "TungstenRenderState.dat",
         "overwrite_output_files": false,
-        "adaptive_sampling": false,
+        "adaptive_sampling": true,
         "enable_resume_render": false,
         "stratified_sampler": false,
         "scene_bvh": true,
-        "spp": 16,
+        "spp": 8,
         "spp_step": 1,
         "checkpoint_interval": "0",
         "timeout": "0"
