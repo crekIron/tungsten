@@ -13,6 +13,13 @@
 
 namespace Tungsten {
 
+
+struct beamInfo {
+    unsigned int prim_idx;
+    int count;
+    Vec3f power;
+};
+
 namespace Bvh {
 class BinaryBvh;
 }
@@ -103,7 +110,7 @@ public:
     void evalPrimaryRays(const PhotonBeam *beams, const PhotonPlane0D *planes0D, const PhotonPlane1D *planes1D,
             uint32 start, uint32 end, float radius, const Ray *depthBuffer, PathSampleGenerator &sampler, float scale);
 
-    Vec3f traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTree,
+    Vec3f traceSensorPath(Vec2u pixel, std::vector<beamInfo> &info, const KdTree<Photon> &surfaceTree,
             const KdTree<VolumePhoton> *mediumTree, const Bvh::BinaryBvh *mediumBvh, const GridAccel *mediumGrid,
             const PhotonBeam *beams, const PhotonPlane0D *planes0D, const PhotonPlane1D *planes1D, PathSampleGenerator &sampler,
             float gatherRadius, float volumeGatherRadius,

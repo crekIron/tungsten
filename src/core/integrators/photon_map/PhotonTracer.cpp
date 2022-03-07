@@ -133,9 +133,9 @@ static bool evalBeam1D(const PhotonBeam &beam, PathSampleGenerator &sampler, con
 
         Ray mediumQuery(ray);
         mediumQuery.setFarT(t);
-        beamEstimate += medium->sigmaT(hitPoint)*invSinTheta/(2.0f*radius)
-                *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
-                *medium->transmittance(sampler, mediumQuery, true, false)*beam.power;
+        // beamEstimate += medium->sigmaT(hitPoint)*invSinTheta/(2.0f*radius)
+        //         *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
+        //         *medium->transmittance(sampler, mediumQuery, true, false)*beam.power;
         
         // std::cout <<  << "medium sigma invsintheta: " << medium->sigmaT(hitPoint) << ", " << invSinTheta << ", " << radius
                 //   << " | medium phase function: " << medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
@@ -265,7 +265,7 @@ void PhotonTracer::evalPrimaryRays(const PhotonBeam *beams, const PhotonPlane0D 
     }
 }
 
-Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTree,
+Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, std::vector<beamInfo> &beam_info, const KdTree<Photon> &surfaceTree,
         const KdTree<VolumePhoton> *mediumTree, const Bvh::BinaryBvh *mediumBvh, const GridAccel *mediumGrid,
         const PhotonBeam *beams, const PhotonPlane0D *planes0D, const PhotonPlane1D *planes1D, PathSampleGenerator &sampler,
         float gatherRadius, float volumeGatherRadius,
@@ -281,8 +281,13 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
         return Vec3f(0.0f);
 
     Vec3f throughput = point.weight*direction.weight;
-    Ray ray(point.p, direction.d);
+    Vec3f origin(0.7 + float(pixel.x()) / float(8) * 0.2,
+                 0.4 + float(pixel.y()) / float(8) * 0.2,
+                 0.1);
+    Vec3f dir(0, 0, 1);
+    Ray ray(origin, dir);
     ray.setPrimaryRay(true);
+    ray.setFarT(0.2);
 
     IntersectionTemporary data;
     IntersectionInfo info;
@@ -291,15 +296,16 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
 
     Vec3f result(0.0f);
     int bounce = 0;
-    bool didHit = _scene->intersect(ray, data, info);
+    bool didHit = true;
 
     depthRay = ray;
+    
     // std::cout <<  << "STARTING THE LOOP for pixel: " << pixel << std::endl;
     while ((medium || didHit) && bounce < _settings.maxBounces) {
         bounce++;
         // std::cout <<  << "ITERATION: " << bounce << std::endl;
 
-        if (medium) {
+        if (medium || true) {
             if (bounce > 1 || !useFrustumGrid) {
                 Vec3f estimate(0.0f);
                 // std::cout <<  << "Lets Calculate Estimate, bounce: " << bounce << std::endl;
@@ -319,8 +325,16 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
                     int fullPathBounce = bounce + beam.bounce;
                     if (fullPathBounce < _settings.minBounces || fullPathBounce >= _settings.maxBounces)
                         return;
-                    // std::cout <<  << "Full Path bounce: " << bounce << ", " << beam.bounce << std::endl;
-                    evalBeam1D(beam, sampler, ray, medium, bounds, tMin, tMax, volumeGatherRadius, estimate);
+                    // std::cout << "Full Path bounce: " << bounce << ", " << beam.bounce << std::endl;
+                    if(evalBeam1D(beam, sampler, ray, medium, bounds, tMin, tMax, volumeGatherRadius, estimate))
+                    {
+                        int idx = pixel.y()*8+pixel.x();
+                        beamInfo temp;
+                        temp.count = 0;
+                        temp.prim_idx = photonIndex;
+                        temp.power = beam.power;
+                        beam_info.push_back(temp);
+                    }
                 };
                 auto planeContribution = [&](uint32 photon, const Vec3pf *bounds, float tMin, float tMax) {
                     int photonBounce = beams[photon].valid ? beams[photon].bounce : (planes0D ? planes0D[photon].bounce : planes1D[photon].bounce);
@@ -364,10 +378,11 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
                     }
                 }
                 // std::cout <<  << "Total Estimate: " << estimate << " Throughput: " << throughput << std::endl;
-                result += throughput*estimate;
+                // result += throughput*estimate;
             }
-            throughput *= medium->transmittance(sampler, ray, true, true);
+            // throughput *= medium->transmittance(sampler, ray, true, true);
         }
+        break;
         if (!didHit || !includeSurfaces)
             break;
 
@@ -404,16 +419,17 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
 
         if (bounce < _settings.maxBounces)
             didHit = _scene->intersect(ray, data, info);
+        break;
     }
 
-    if (!includeSurfaces)
-        return result;
+    // if (!includeSurfaces)
+    //     return result;
 
-    if (!didHit) {
-        if (!medium && bounce > _settings.minBounces && _scene->intersectInfinites(ray, data, info))
-            result += throughput*info.primitive->evalDirect(data, info);
-        return result;
-    }
+    // if (!didHit) {
+    //     if (!medium && bounce > _settings.minBounces && _scene->intersectInfinites(ray, data, info))
+    //         result += throughput*info.primitive->evalDirect(data, info);
+    //     return result;
+    // }
     // if (info.primitive->isEmissive() && bounce > _settings.minBounces) {
     //     result += throughput*info.primitive->evalDirect(data, info);
     //     std::cout << "Surface Emission: Throughput till now: " << throughput

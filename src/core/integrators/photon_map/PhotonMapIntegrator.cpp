@@ -91,18 +91,18 @@ void PhotonMapIntegrator::tracePhotons(uint32 taskId, uint32 numSubTasks, uint32
 void PhotonMapIntegrator::tracePixels(uint32 tileId, uint32 threadId, float surfaceRadius, float volumeRadius)
 {
     int spp = _nextSpp - _currentSpp;
-
+    std::vector<std::vector<beamInfo>> info(64);
     ImageTile &tile = _tiles[tileId];
-    for (uint32 y = 0; y < tile.h; ++y) {
-        for (uint32 x = 0; x < tile.w; ++x) {
-            Vec2u pixel(tile.x + x, tile.y + y);
-            uint32 pixelIndex = pixel.x() + pixel.y()*_w;
-
+    for (uint32 y = 0; y < 8; ++y) {
+        for (uint32 x = 0; x < 8; ++x) {
+            Vec2u pixel(x, y);
+            uint32 pixelIndex = pixel.x() + pixel.y();
+            // std::cout << pixelIndex << std::endl;
             Ray dummyRay;
             Ray *depthRay = _depthBuffer ? &_depthBuffer[pixel.x() + pixel.y()*_w] : &dummyRay;
             for (int i = 0; i < spp; ++i) {
                 tile.sampler->startPath(pixelIndex, _currentSpp + i);
-                Vec3f c = _tracers[threadId]->traceSensorPath(pixel,
+                Vec3f c = _tracers[0]->traceSensorPath(pixel, info[pixelIndex],
                     *_surfaceTree,
                     _volumeTree.get(),
                     _volumeBvh.get(),
@@ -117,12 +117,82 @@ void PhotonMapIntegrator::tracePixels(uint32 tileId, uint32 threadId, float surf
                     *depthRay,
                     _useFrustumGrid
                 );
-                _scene->cam().colorBuffer()->addSample(pixel, c);
+                // _scene->cam().colorBuffer()->addSample(pixel, c);
             }
-            if (_group->isAborting())
-                break;
+            // if (_group->isAborting())
+            //     break;
         }
     }
+    // for(int i=0; i< 64;i++) {
+    //     for(int j=0; j<info[i].size(); j++) {
+    //         std::cout << info[i][j].prim_idx << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    std::cout << "Starting to analyze" << std::endl;
+    std::unordered_map<unsigned int, beamInfo> map_info;
+    int green = 0, red = 0, yellow = 0;
+    int green_hit = 0, red_hit = 0, yellow_hit = 0;
+    for (unsigned int i = 0; i < 64; i++)
+    {
+        for (unsigned int j = 0; j < info[i].size(); j++)
+        {
+            unsigned int idx = info[i][j].prim_idx;
+            if (map_info.find(idx) == map_info.end())
+            {
+                map_info[idx] = info[i][j];
+                map_info[idx].count = 0;
+
+                if (map_info[idx].power.x() > map_info[idx].power.y())
+                    red++;
+                else if (map_info[idx].power.x() < map_info[idx].power.y())
+                    green++;
+                else
+                    yellow++;
+            }
+            map_info[idx].count++;
+            if (map_info[idx].power.x() > map_info[idx].power.y())
+                red_hit++;
+            else if (map_info[idx].power.x() < map_info[idx].power.y())
+                green_hit++;
+            else
+                yellow_hit++;
+        }
+    }
+
+    for (auto x : map_info)
+    {
+        if(x.second.power.x() > x.second.power.y())
+            std::cout << "Beam id: " << x.first
+                  << " count: " << x.second.count
+                  << " Beam power: " << x.second.power
+                  << std::endl;
+    }
+    std::cout << "Number of red beams " << red << std::endl;
+    std::cout << "Number of red hits " << red_hit << std::endl;
+    std::cout << std::endl;
+    for (auto x : map_info)
+    {
+        if(x.second.power.x() < x.second.power.y())
+            std::cout << "Beam id: " << x.first
+                  << " count: " << x.second.count
+                  << " Beam power: " << x.second.power
+                  << std::endl;
+    }
+    std::cout << "Number of green beams " << green << std::endl;
+    std::cout << "Number of green hits " << green_hit << std::endl;
+    std::cout << std::endl;
+    for (auto x : map_info)
+    {
+        if(x.second.power.x() == x.second.power.y())
+            std::cout << "Beam id: " << x.first
+                  << " count: " << x.second.count
+                  << " Beam power: " << x.second.power
+                  << std::endl;
+    }
+    std::cout << "Number of yellow beams " << yellow << std::endl;
+    std::cout << "Number of green beams " << yellow_hit << std::endl;
+    std::cout << std::endl;
 }
 
 template<typename PhotonType>
@@ -511,22 +581,23 @@ void PhotonMapIntegrator::renderSegment(std::function<void()> completionCallback
         buildPhotonDataStructures(1.0f);
     }
 
-    ThreadUtils::pool->yield(*ThreadUtils::pool->enqueue(
-        std::bind(&PhotonMapIntegrator::tracePixels, this, _1, _3, _settings.gatherRadius, _settings.volumeGatherRadius),
-        _tiles.size(), [](){}
-    ));
+    tracePixels(0, 0, _settings.gatherRadius, _settings.volumeGatherRadius);
+    // ThreadUtils::pool->yield(*ThreadUtils::pool->enqueue(
+    //     std::bind(&PhotonMapIntegrator::tracePixels, this, _1, _3, _settings.gatherRadius, _settings.volumeGatherRadius),
+    //     _tiles.size(), [](){}
+    // ));
 
-    if (_useFrustumGrid) {
-        ThreadUtils::pool->yield(*ThreadUtils::pool->enqueue(
-            [&](uint32 tracerId, uint32 numTracers, uint32) {
-                uint32 start = intLerp(0, _pathPhotonCount, tracerId,     numTracers);
-                uint32 end   = intLerp(0, _pathPhotonCount, tracerId + 1, numTracers);
-                _tracers[tracerId]->evalPrimaryRays(_beams.get(), _planes0D.get(), _planes1D.get(),
-                        start, end, _settings.volumeGatherRadius, _depthBuffer.get(), *_samplers[tracerId],
-                        _nextSpp - _currentSpp);
-            }, _tracers.size(), [](){}
-        ));
-    }
+    // if (_useFrustumGrid) {
+    //     ThreadUtils::pool->yield(*ThreadUtils::pool->enqueue(
+    //         [&](uint32 tracerId, uint32 numTracers, uint32) {
+    //             uint32 start = intLerp(0, _pathPhotonCount, tracerId,     numTracers);
+    //             uint32 end   = intLerp(0, _pathPhotonCount, tracerId + 1, numTracers);
+    //             _tracers[tracerId]->evalPrimaryRays(_beams.get(), _planes0D.get(), _planes1D.get(),
+    //                     start, end, _settings.volumeGatherRadius, _depthBuffer.get(), *_samplers[tracerId],
+    //                     _nextSpp - _currentSpp);
+    //         }, _tracers.size(), [](){}
+    //     ));
+    // }
 
     _currentSpp = _nextSpp;
     advanceSpp();
