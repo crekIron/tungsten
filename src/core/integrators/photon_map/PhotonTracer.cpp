@@ -42,8 +42,14 @@ static inline bool intersectBeam1D(const PhotonBeam &beam, const Ray &ray, const
     t = n.dot(l)/n.dot(ray.dir());
     Vec3f hitPoint = ray.pos() + ray.dir()*t;
 
+    Vec3f line = beam.p0 - ray.pos();
+    Vec3f unit = beam.dir.cross(ray.dir()).normalized();
+    float length = abs(line.dot(unit));
+
     invSinTheta = 1.0f/std::sqrt(max(0.0f, 1.0f - sqr(ray.dir().dot(beam.dir))));
-    if (std::abs(u.dot(hitPoint - beam.p0)) > radius)
+    // if (std::abs(u.dot(hitPoint - beam.p0)) > radius)
+    //     return false;
+    if (length > radius)
         return false;
 
     if (bounds) {
@@ -62,6 +68,7 @@ static inline bool intersectBeam1D(const PhotonBeam &beam, const Ray &ray, const
     if (s < 0.0f || s > beam.length)
         return false;
 
+    // std::cout << length << " " << std::abs(u.dot(hitPoint - beam.p0)) << std::endl;
     return true;
 }
 static inline bool intersectPlane0D(const Ray &ray, float tMin, float tMax, Vec3f p0, Vec3f p1, Vec3f p2,
@@ -281,13 +288,19 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, std::vector<beamInfo> &beam_inf
         return Vec3f(0.0f);
 
     Vec3f throughput = point.weight*direction.weight;
-    Vec3f origin(0.7 + float(pixel.x()) / float(8) * 0.2,
+    Vec3f origin(0.44 + float(pixel.x()) / float(8) * 0.2,
                  0.4 + float(pixel.y()) / float(8) * 0.2,
                  0.1);
     Vec3f dir(0, 0, 1);
     Ray ray(origin, dir);
     ray.setPrimaryRay(true);
     ray.setFarT(0.2);
+
+    printf("thread: (%d, %d), origin: (%f, %f, %f), dir: (%f, %f, %f), At the raygen program \n", 
+            pixel.x(), pixel.y(),
+            origin.x(),   origin.y(),  origin.z(),
+            dir.x(), dir.y(), dir.z()
+            );
 
     IntersectionTemporary data;
     IntersectionInfo info;

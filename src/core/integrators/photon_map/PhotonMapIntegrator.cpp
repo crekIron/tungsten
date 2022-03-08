@@ -571,7 +571,7 @@ void PhotonMapIntegrator::renderSegment(std::function<void()> completionCallback
     using namespace std::placeholders;
 
     _scene->cam().setSplatWeight(1.0/_nextSpp);
-
+    std::cout << "tracing photons" << std::endl;
     if (!_surfaceTree) {
         ThreadUtils::pool->yield(*ThreadUtils::pool->enqueue(
             std::bind(&PhotonMapIntegrator::tracePhotons, this, _1, _2, _3, 0),
