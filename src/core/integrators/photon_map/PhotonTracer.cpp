@@ -406,14 +406,14 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, const KdTree<Photon> &surfaceTr
             didHit = _scene->intersect(ray, data, info);
     }
 
-    if (!includeSurfaces)
-        return result;
+    // if (!includeSurfaces)
+    //     return result;
 
-    if (!didHit) {
-        if (!medium && bounce > _settings.minBounces && _scene->intersectInfinites(ray, data, info))
-            result += throughput*info.primitive->evalDirect(data, info);
-        return result;
-    }
+    // if (!didHit) {
+    //     if (!medium && bounce > _settings.minBounces && _scene->intersectInfinites(ray, data, info))
+    //         result += throughput*info.primitive->evalDirect(data, info);
+    //     return result;
+    // }
     // if (info.primitive->isEmissive() && bounce > _settings.minBounces) {
     //     result += throughput*info.primitive->evalDirect(data, info);
     //     std::cout << "Surface Emission: Throughput till now: " << throughput

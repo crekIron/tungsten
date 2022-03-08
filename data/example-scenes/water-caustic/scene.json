@@ -336,9 +336,8 @@
         "gather_radius":0.05,
         "photon_count": 240000,
         "gather_photon_count": 30,
-        "volume_photon_count": 10000,
-        "alpha": 0.3,
-        "fixed_volume_radius": false,
+        "volume_photon_count": 8000,
+        "fixed_volume_radius": true,
         "volume_gather_radius": 0.05,
         "include_surfaces": true
     },
@@ -350,7 +349,7 @@
         "enable_resume_render": false,
         "stratified_sampler": false,
         "scene_bvh": true,
-        "spp": 8,
+        "spp": 1,
         "spp_step": 1,
         "checkpoint_interval": "0",
         "timeout": "0"
