@@ -425,7 +425,7 @@ void PhotonMapIntegrator::buildPhotonDataStructures(float volumeRadiusScale)
         _volumeTree->buildVolumeHierarchy(_settings.fixedVolumeRadius, volumeRadius*volumeRadiusScale);
     } else if (!_pathPhotons.empty()) {
         uint32 tail = streamCompact(pathRanges);
-        std::cout << "Total Beam Paths: " << _totalTracedPaths << std::endl;
+        std::cout << "Total Beam Paths: " << _totalTracedPaths << " " << tail << std::endl;
         for (uint32 i = 0; i < tail; ++i) {
             _pathPhotons[i].power *= (1.0/_totalTracedPaths);
         }

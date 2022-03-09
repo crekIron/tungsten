@@ -130,16 +130,16 @@ static bool evalBeam1D(const PhotonBeam &beam, PathSampleGenerator &sampler, con
     float invSinTheta, t;
     if (intersectBeam1D(beam, ray, bounds, tMin, tMax, radius, invSinTheta, t)) {
         /* Let's check the actual distance between beam and camera ray */
-        Vec3f line = beam.p0 - ray.pos();
-        Vec3f unit = beam.dir.cross(ray.dir()).normalized();
-        float length = abs(line.dot(unit));
-        if (length >= radius)
-            std::cout << "Far Distance from beam: " << length << std::endl;
+        // Vec3f line = beam.p0 - ray.pos();
+        // Vec3f unit = beam.dir.cross(ray.dir()).normalized();
+        // float length = abs(line.dot(unit));
+        // if (length >= radius)
+        //     std::cout << "Far Distance from beam: " << length << std::endl;
 
-        Vec3f hitPoint = ray.pos() + ray.dir()*t;
+        // Vec3f hitPoint = ray.pos() + ray.dir()*t;
 
-        Ray mediumQuery(ray);
-        mediumQuery.setFarT(t);
+        // Ray mediumQuery(ray);
+        // mediumQuery.setFarT(t);
         // beamEstimate += medium->sigmaT(hitPoint)*invSinTheta/(2.0f*radius)
         //         *medium->phaseFunction(hitPoint)->eval(beam.dir, -ray.dir())
         //         *medium->transmittance(sampler, mediumQuery, true, false)*beam.power;
@@ -288,9 +288,9 @@ Vec3f PhotonTracer::traceSensorPath(Vec2u pixel, std::vector<beamInfo> &beam_inf
         return Vec3f(0.0f);
 
     Vec3f throughput = point.weight*direction.weight;
-    Vec3f origin(0.44 + float(pixel.x()) / float(8) * 0.2,
-                 0.4 + float(pixel.y()) / float(8) * 0.2,
-                 0.1);
+    Vec3f origin(0.45 + float(pixel.x()) / float(8) * 0.2,
+                 0.8 + float(pixel.y()) / float(8) * 0.2,
+                 0.46);
     Vec3f dir(0, 0, 1);
     Ray ray(origin, dir);
     ray.setPrimaryRay(true);
