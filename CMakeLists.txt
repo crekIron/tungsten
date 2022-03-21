@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(Tungsten)
 
+# adding some flags for profilig
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+################################
+
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 include(CXX11)
@@ -52,7 +58,7 @@ IF(COMMAND cmake_policy)
 ENDIF(COMMAND cmake_policy)
 
 foreach(flag ${Vc_ARCHITECTURE_FLAGS})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag} -pg")
 endforeach()
 
 set(EMBREE_STATIC_LIB ON CACHE BOOL "Build Embree as a static library." FORCE)
@@ -83,7 +89,7 @@ add_library(thirdparty STATIC
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     set(CXX_WARNINGS "-Wall -Wextra -Wpointer-arith -Wcast-align -fstrict-aliasing -Wno-unused-local-typedefs -Wno-misleading-indentation -Wno-maybe-uninitialized -Wno-int-in-bool-context -Wno-implicit-fallthrough -Wno-class-memaccess")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_WARNINGS} -fvisibility-inlines-hidden")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_WARNINGS} -pg -fvisibility-inlines-hidden")
 endif()
 set(core_libs core thirdparty embree)
 
